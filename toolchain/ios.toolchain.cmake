@@ -51,11 +51,12 @@
 #
 # The following variables control the behaviour of this toolchain:
 #
-# IOS_PLATFORM: OS (default) or SIMULATOR or SIMULATOR64 or TVOS or SIMULATOR_TVOS or WATCHOS or SIMULATOR_WATCHOS
+# IOS_PLATFORM: OS (default) or SIMULATOR or SIMULATOR64 or TVOS or SIMULATOR_TVOS or WATCHOS or SIMULATOR_WATCHOS or SIMULATORARM64
 #    OS = Build for iPhoneOS.
 #    OS64 = Build for arm64 arm64e iPhoneOS.
 #    SIMULATOR = Build for x86 i386 iPhone Simulator.
 #    SIMULATOR64 = Build for x86_64 iPhone Simulator.
+#    SIMULATORARM64 = Build for arm64 iPhone Simulator.
 #    TVOS = Build for AppleTVOS.
 #    SIMULATOR_TVOS = Build for x86_64 AppleTV Simulator.
 #    WATCHOS = Build for armv7k arm64_32 for WatchOS.
@@ -165,6 +166,11 @@ elseif(IOS_PLATFORM STREQUAL "SIMULATOR64")
   set(XCODE_IOS_PLATFORM iphonesimulator)
   if(NOT IOS_ARCH)
     set(IOS_ARCH x86_64)
+  endif()
+elseif(IOS_PLATFORM STREQUAL "SIMULATORARM64")
+  set(XCODE_IOS_PLATFORM iphonesimulator)
+  if(NOT IOS_ARCH)
+    set(IOS_ARCH arm64)
   endif()
 elseif (IOS_PLATFORM STREQUAL "TVOS")
   set(XCODE_IOS_PLATFORM appletvos)
@@ -372,7 +378,7 @@ elseif (IOS_PLATFORM STREQUAL "SIMULATOR_WATCHOS")
   set(XCODE_IOS_PLATFORM_VERSION_FLAGS
     "-mwatchos-simulator-version-min=${IOS_DEPLOYMENT_TARGET}")
 else()
-  # SIMULATOR or SIMULATOR64 both use -mios-simulator-version-min.
+  # SIMULATOR, SIMULATOR64, or SIMULATORARM64 all use -mios-simulator-version-min.
   set(XCODE_IOS_PLATFORM_VERSION_FLAGS
     "-mios-simulator-version-min=${IOS_DEPLOYMENT_TARGET}")
 endif()

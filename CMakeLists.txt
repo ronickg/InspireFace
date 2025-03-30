@@ -37,14 +37,14 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/python/version.txt.in ${CMAKE_CURRENT
 # Check that the 3rdparty folder exists
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
     message(STATUS "3rdparty directory not found, cloning from github...")
-    
+
     # Execute git clone and directly specify it in the current directory
     execute_process(
         COMMAND git clone --recurse-submodules https://github.com/tunmx/inspireface-3rdparty.git "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         RESULT_VARIABLE GIT_RESULT
     )
-    
+
     if(NOT GIT_RESULT EQUAL "0")
         message(FATAL_ERROR "Failed to clone 3rdparty repository")
     else()
@@ -120,7 +120,7 @@ if (ISF_ENABLE_RKNN)
         set(ISF_RKNPU_RV1106 ON)
         add_definitions("-DISF_RKNPU_RV1106")
     endif()
-    
+
 endif ()
 
 # Enable Rockchip RGA
@@ -150,7 +150,7 @@ endif()
 
 # Apple device dedicated expansion services, support for some models coreml reasoning and so on
 set(ISF_ENABLE_APPLE_EXTENSION OFF CACHE BOOL "Enable Apple device extension services, such as coreml, etc.")
-if(ISF_ENABLE_APPLE_EXTENSION)  
+if(ISF_ENABLE_APPLE_EXTENSION)
     add_definitions("-DISF_ENABLE_APPLE_EXTENSION")
     add_definitions("-DINFERENCE_WRAPPER_ENABLE_COREML")
 endif()
@@ -203,9 +203,19 @@ if(APPLE)
         set(CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH NO)
         set(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE NO)
 
-        set(MNN_FRAMEWORK_PATH "${IOS_3RDPARTY}/MNN.framework")
-        include_directories("${MNN_FRAMEWORK_PATH}/")
-        link_directories(${IOS_3RDPARTY})
+        # Use MNN_INCLUDE_DIR if provided (for our build script)
+        if(DEFINED MNN_INCLUDE_DIR)
+            set(MNN_INCLUDE_DIRS "${MNN_INCLUDE_DIR}")
+            include_directories("${MNN_INCLUDE_DIRS}")
+            message(STATUS "Using MNN Headers from: ${MNN_INCLUDE_DIRS}")
+        elseif(DEFINED IOS_3RDPARTY)
+            # Legacy path for backward compatibility
+            set(MNN_FRAMEWORK_PATH "${IOS_3RDPARTY}/MNN.framework")
+            include_directories("${MNN_FRAMEWORK_PATH}/")
+            link_directories(${IOS_3RDPARTY})
+        else()
+            message(FATAL_ERROR "MNN headers not found. Please provide either MNN_INCLUDE_DIR or IOS_3RDPARTY")
+        endif()
     else()
         message("Use apple device")
         set(PLAT darwin)
@@ -304,7 +314,7 @@ elseif(DEFINED ISF_MNN_CUSTOM_SOURCE)
     add_subdirectory(${ISF_MNN_CUSTOM_SOURCE} EXCLUDE_FROM_ALL)
     set(MNN_INCLUDE_DIRS "${ISF_MNN_CUSTOM_SOURCE}/include")
     set(MNN_LIBS MNN)
-    
+
 else ()
     # Default or fallback case for MNN setup
     message("Default or fallback case for MNN setup")
